@@ -1,0 +1,12 @@
+respondent_id,department,age,satisfaction,submitted_at,comment
+101,Sales,28,4,2025-02-01,Positive
+102,Engineering,34,5,2025-02-02,Fast response
+103,Sales,,3,2025-02-03,
+104,Support,41,2,2025-02-04,Needs follow-up
+105,Engineering,29,4,2025-02-05,Positive
+106,Support,37,,2025-02-06,
+107,Sales,31,3,2025-02-07,Average
+108,Engineering,120,5,2025-02-08,Check age value
+108,Engineering,120,5,2025-02-08,Check age value
+109,Support,26,4,2025-02-09,Positive
+

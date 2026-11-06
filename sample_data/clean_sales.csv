@@ -1,0 +1,10 @@
+date,region,product,units,revenue
+2025-01-01,North,Notebook,12,36.00
+2025-01-02,South,Pen,30,45.00
+2025-01-03,East,Notebook,8,24.00
+2025-01-04,West,Folder,15,30.00
+2025-01-05,North,Pen,20,30.00
+2025-01-06,South,Folder,10,20.00
+2025-01-07,East,Pen,25,37.50
+2025-01-08,West,Notebook,9,27.00
+
