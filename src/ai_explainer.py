@@ -117,12 +117,11 @@ def _get_model_response(
     timeout = max(1.0, float(os.getenv("AI_TIMEOUT_SECONDS", "20")))
     prompt = (
         "Explain these computed dataset analysis results to a beginner in simple "
-        "English. When this is a relationship analysis, explain the direction and "
-        "strength of the association, whether its reported test is statistically "
-        "significant, and practical caveats. Explicitly state that correlation is "
-        "not causation and do not claim cause. Write 3 to 6 short sentences. The "
-        "summary contains aggregate statistics and column metadata only, without "
-        "raw rows or category labels:\n\n"
+        "English. When correlations are included, describe their direction and "
+        "strength and state that correlation is not causation. Mention practical "
+        "data-quality caveats and avoid causal claims. Write 3 to 6 short "
+        "sentences. The summary contains aggregate statistics and column "
+        "metadata only, without raw rows or category labels:\n\n"
         f"{summary}"
     )
     if provider == "openai":

@@ -1,117 +1,60 @@
 # AI-Powered-CSV-Data-Analyst
 
-AI-Data-Analyst is a local Streamlit application that profiles CSV files,
-visualizes common patterns, and explains the results in plain English. It can
-run entirely offline; an OpenAI or Anthropic key is optional.
+A local Streamlit app that profiles uploaded CSV files, automatically selects
+useful visualizations, and explains the results in plain English. It works
+without an AI provider key; optional OpenAI or Anthropic keys power the dataset
+summary explanation.
 
 ## Features
 
 - Upload `.csv` files up to 50 MB with delimiter and common encoding detection.
-- Review dataset shape, memory use, duplicates, types, and a 10-row preview.
-- Find missing-value counts and percentages, including columns above 30%.
-- Explore numeric descriptions, categorical counts, skewness, and IQR outliers.
-- Build histograms, category bars, correlation heatmaps, and boxplots.
-- Ask Your Data questions in plain English to create charts, filter rows,
-  describe columns, count categories, aggregate values, compare ranges and
-  trends, or analyze relationships. Requests are routed by intent, grounded in
-  a compact data profile, and displayed as large Matplotlib charts with
-  explanations. Full reports include multiple plots. Follow-up suggestions,
-  the last ten requests, CSV/PNG/Markdown downloads, and optional AI planning
-  are available in the app.
-- Generate an AI explanation from a compact profile summary. Dataset rows
-  and category labels are never sent to an AI provider.
-- Use a rule-based explanation when no key is configured or a provider fails.
-- Download a TXT or Markdown analysis report.
+- Review dataset dimensions, memory use, duplicates, types, and a 10-row preview.
+- Explore missingness, numeric statistics, categorical counts, skewness, and
+  IQR-based outliers.
+- Automatically scan the dataset and select useful charts for distributions,
+  numeric relationships, categories, date trends, and missing values.
+- Read short data-quality and statistical findings alongside the charts.
+- Download charts and the complete profile as TXT or Markdown.
+- Keep analysis local except for compact aggregate summaries sent to an optional
+  AI provider; raw rows and category labels are never sent.
 
-### Ask Your Data examples
+## Data Story
 
-- `plot a histogram of age`
-- `show correlation between price and rating`
-- `average salary by department as a bar chart`
-- `top 10 cities by count`
-- `boxplot of income by gender`
-- `show rows where age > 30`
-- `Relationship between ticket fare and survival`
-- `Does age affect survival?`
-- `Survival rate by passenger class`
-- `Compare fare across embarkation ports`
-- `Is gender related to survival?`
-- `Correlation between age and fare`
-- `Impact of family size (SibSp) on survival`
-- `Analyze this dataset`
+The Data Story is an automatic exploratory analysis, not a chart-type picker.
+It infers column roles and selects up to six charts that fit the dataset:
 
-### Ask Your Data architecture
+- Date plus numeric measure: trend line and rolling mean.
+- Numeric measures: distributions, correlation heatmap, and a scatterplot for
+  a sufficiently strong numeric association.
+- Numeric measure plus group: grouped boxplot.
+- Low-cardinality category: most-common-values bar chart.
+- Incomplete columns: missingness chart.
 
-Ask Your Data uses seven stages:
-
-1. **Intent router** classifies common requests with keyword rules first.
-2. **Data summary and column resolver** report inferred types, nulls,
-   descriptive statistics, category counts, dates, and correlations, then map
-   synonyms and misspellings to real columns. Raw rows and category labels are
-   never sent to an AI provider.
-3. **Plan generator** returns a constrained JSON analysis plan. It does not
-   generate executable Python.
-4. **Validation and execution** validate columns and chart parameters, then
-   call trusted pandas/Matplotlib functions. Model-generated code is never
-   passed to `eval`, `exec`, or a subprocess.
-5. **Repair** retries a chart using a compatible trusted chart choice if the
-   first result fails validation or has no usable chart.
-6. **Chart quality check** verifies that the output has a figure, title,
-   labels, and bounded categorical axes.
-7. **Explanation and Goal Explorer** explain computed summaries and offer
-   dataset-specific follow-up questions.
-
-This constrained-plan design deliberately replaces arbitrary generated-code
-execution. An AST filter and restricted Python builtins are not a dependable
-security sandbox, and a subprocess alone does not isolate access to files,
-network, or the host. The application therefore executes only its own
-validated analysis functions. This reduces risk but is not a formal security
-boundary; the app is intended for local use with the user's own data. When an
-AI provider is configured, only column metadata and aggregate statistics are
-sent. Raw rows and category labels are excluded.
-
-## Screenshots
-
-Add screenshots of the Overview, Statistics, and AI explanation tabs here.
+The report also highlights missing values, duplicates, skew, and strong
+correlations. Identifier-like, constant, empty, and high-cardinality fields are
+not treated as useful measures or groups. Large row-heavy charts use a
+reproducible sample, and the app discloses the sample size.
 
 ## Setup
 
 Python 3.10 or newer is required.
 
-1. Create and activate a virtual environment:
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+streamlit run app.py
+```
 
-   ```powershell
-   py -3 -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
+Upload either CSV in `sample_data/` to explore the app.
 
-2. Install the pinned dependencies:
+## Optional AI explanation
 
-   ```powershell
-   python -m pip install --upgrade pip
-   python -m pip install -r requirements.txt
-   ```
-
-3. Optional: copy `.env.example` to `.env` and add a provider key as described
-   below.
-
-4. Start the app from the project directory:
-
-   ```powershell
-   streamlit run app.py
-   ```
-
-The project includes sample files in `sample_data/`; upload either one in the
-app to try the workflow.
-
-## Optional AI provider keys
-
-Copy `.env.example` to `.env`. Set `AI_PROVIDER` to `openai` or `anthropic` and
-provide the matching `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`. The model can be
-overridden with `OPENAI_MODEL` or `ANTHROPIC_MODEL`. `AI_TIMEOUT_SECONDS`
-controls the request timeout (20 seconds by default). Keep `.env` private; it
-is ignored by Git. Without a key, the app provides an offline explanation
-without requiring an internet connection.
+Copy `.env.example` to `.env`, choose `AI_PROVIDER=openai` or `anthropic`, and
+set the matching `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`. The model can be
+selected with `OPENAI_MODEL` or `ANTHROPIC_MODEL`. Keep `.env` private; it is
+ignored by Git. Without a key, the app provides a rule-based explanation.
 
 ## Tests
 
@@ -119,60 +62,25 @@ without requiring an internet connection.
 python -m pytest
 ```
 
-Tests cover CSV loading, encoding fallback, missing values, mixed-type
-statistics, outliers, summary privacy, AI fallback behavior, visualizations,
-report formatting, natural-language intent routing, column matching, plan
-validation, chart quality/repair, and AppTest workflows. Unit tests do not
-require a real API key or network access.
-
-## Visualization evaluation
-
-The local evaluation covers at least 40 requests across the Titanic and messy
-sales fixtures:
-
-```powershell
-python evaluation\run_eval.py
-```
-
-If `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is configured, the script runs with
-the selected provider and writes per-request outcomes to
-`evaluation\results.csv`. To force the deterministic offline path:
-
-```powershell
-python evaluation\run_eval.py --offline
-```
-
-The evaluation reports the percentage of requests that fail to produce a
-titled, labeled figure. Offline results measure deterministic coverage, not
-LLM accuracy. Live provider results vary by model and dataset; no particular
-error-rate target is guaranteed.
+The tests cover upload handling, analysis, Data Story chart selection, AI
+explanation fallback, report downloads, and Streamlit upload/rendering.
 
 ## Project structure
 
 ```text
-AI-Data-Analyst/
+AI-Powered-CSV-Data-Analyst/
 ├── app.py
 ├── src/
-│   ├── __init__.py
 │   ├── ai_explainer.py
 │   ├── analysis.py
-│   ├── ask_agent.py
-│   ├── code_generator.py
-│   ├── command_parser.py
-│   ├── intent_router.py
+│   ├── auto_visualizer.py
 │   ├── loader.py
-│   ├── plan_executor.py
-│   ├── plan_validator.py
-│   ├── relationship_analysis.py
-│   ├── summarizer.py
 │   ├── type_inference.py
 │   ├── utils.py
 │   └── visualizations.py
 ├── tests/
 │   ├── fixtures/
 │   └── test_*.py
-├── evaluation/
-│   └── run_eval.py
 ├── sample_data/
 ├── .env.example
 ├── .gitignore
@@ -180,9 +88,10 @@ AI-Data-Analyst/
 └── README.md
 ```
 
-## Future improvements
+## Limitations
 
-- Add configurable date parsing and time-series profiling.
-- Support export to PDF and additional chart types.
-- Add user-selectable sampling for very large datasets.
-- Add more provider integrations and configurable privacy controls.
+Automatic chart selection uses deterministic rules and aggregate statistics;
+it does not infer domain-specific meaning beyond column names and data types.
+AI explanations are optional and depend on the configured provider. When used,
+only compact aggregates and schema information are sent. The app is designed
+for local use with the user's own data.
